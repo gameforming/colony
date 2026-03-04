@@ -11,7 +11,6 @@ export class InventoryUI {
         // =============================
         // STATE
         // =============================
-
         this.isOpen = false;
         this.selected = 0;
 
@@ -25,7 +24,6 @@ export class InventoryUI {
         // =============================
         // DOM
         // =============================
-
         this.hotbarEl = document.getElementById("hotbar");
         this.windowEl = document.getElementById("inventoryWindow");
         this.gridEl = document.getElementById("inventoryGrid");
@@ -37,28 +35,27 @@ export class InventoryUI {
         this.refresh();
     }
 
-
     // =====================================================
     // UI CREATION
     // =====================================================
-
     createSlots() {
 
-        // hotbar
+        // HOTBAR
         for (let i = 0; i < HOTBAR_SIZE; i++) {
             this.hotbarEl.appendChild(this.makeSlot("hotbar", i));
         }
 
-        // inventory
+        // INVENTORY GRID
         for (let i = 0; i < INV_SIZE; i++) {
             this.gridEl.appendChild(this.makeSlot("inv", i));
         }
 
-        // crafting
+        // CRAFT GRID
         for (let i = 0; i < 9; i++) {
             this.craftGridEl.appendChild(this.makeSlot("craft", i));
         }
 
+        // CRAFT RESULT CLICK
         this.resultEl.addEventListener("mousedown", () => {
             const result = this.getCraftResult();
             if (!result) return;
@@ -72,7 +69,6 @@ export class InventoryUI {
     makeSlot(type, index) {
         const div = document.createElement("div");
         div.className = "slot";
-
         div.dataset.type = type;
         div.dataset.index = index;
 
@@ -80,21 +76,17 @@ export class InventoryUI {
         return div;
     }
 
-
     // =====================================================
-    // TOGGLE
+    // TOGGLE INVENTORY
     // =====================================================
-
     toggle() {
         this.isOpen = !this.isOpen;
         this.windowEl.style.display = this.isOpen ? "flex" : "none";
     }
 
-
     // =====================================================
     // HOTBAR SELECT
     // =====================================================
-
     nextHotbar() {
         this.selected = (this.selected + 1) % HOTBAR_SIZE;
         this.refresh();
@@ -113,32 +105,26 @@ export class InventoryUI {
     removeSelected(count) {
         const s = this.hotbar[this.selected];
         if (!s) return;
-
         s.count -= count;
         if (s.count <= 0) this.hotbar[this.selected] = null;
-
         this.refresh();
     }
 
-
     // =====================================================
-    // ITEMS
+    // ADD ITEM
     // =====================================================
-
     addItem(item, count = 1) {
 
-        const all = [...this.hotbar, ...this.inventory];
+        const allSlots = [...this.hotbar, ...this.inventory];
 
         // stack first
-        for (const slot of all) {
+        for (const slot of allSlots) {
             if (slot && slot.item === item && slot.count < STACK_MAX) {
                 const space = STACK_MAX - slot.count;
                 const add = Math.min(space, count);
-
                 slot.count += add;
                 count -= add;
-
-                if (count <= 0) return true;
+                if (count <= 0) { this.refresh(); return true; }
             }
         }
 
@@ -150,7 +136,6 @@ export class InventoryUI {
                 return true;
             }
         }
-
         for (let i = 0; i < this.inventory.length; i++) {
             if (!this.inventory[i]) {
                 this.inventory[i] = { item, count };
@@ -162,33 +147,28 @@ export class InventoryUI {
         return false;
     }
 
-
     // =====================================================
     // DRAG & DROP
     // =====================================================
-
     onMouseDown(e, div) {
 
         const type = div.dataset.type;
         const index = +div.dataset.index;
-
         const arr = this.getArray(type);
 
         const slot = arr[index];
 
-        // pickup
+        // PICKUP
         if (!this.dragItem && slot) {
             this.dragItem = slot;
             arr[index] = null;
         }
-        // place / swap
+        // PLACE / SWAP
         else if (this.dragItem) {
-
             if (!slot) {
                 arr[index] = this.dragItem;
                 this.dragItem = null;
-            }
-            else {
+            } else {
                 [arr[index], this.dragItem] = [this.dragItem, slot];
             }
         }
@@ -202,15 +182,12 @@ export class InventoryUI {
         if (type === "craft") return this.craft;
     }
 
-
     // =====================================================
     // CRAFTING
     // =====================================================
-
     async loadRecipes() {
         try {
             const text = await fetch("./recipes.txt").then(r => r.text());
-
             this.recipes = text
                 .split("\n")
                 .map(l => l.trim())
@@ -218,44 +195,36 @@ export class InventoryUI {
                 .map(line => {
                     const [pattern, result] = line.split("=");
                     const [item, count] = result.split(",");
-
                     return {
                         pattern: pattern.split(","),
                         item,
                         count: +count
                     };
                 });
-
         } catch {
             // geen recipes.txt is ok
         }
     }
 
     getCraftResult() {
-
         const grid = this.craft.map(s => s ? s.item : "empty").join(",");
-
         for (const r of this.recipes) {
             if (r.pattern.join(",") === grid) return r;
         }
-
         return null;
     }
 
     consumeCraft() {
         for (let i = 0; i < 9; i++) {
             if (!this.craft[i]) continue;
-
             this.craft[i].count--;
             if (this.craft[i].count <= 0) this.craft[i] = null;
         }
     }
 
-
     // =====================================================
     // UPDATE / DRAW
     // =====================================================
-
     update() {
         this.drawCraftResult();
     }
@@ -271,9 +240,7 @@ export class InventoryUI {
     }
 
     drawSlots(container, arr) {
-
         [...container.children].forEach((div, i) => {
-
             div.innerHTML = "";
 
             const slot = arr[i];
@@ -297,11 +264,8 @@ export class InventoryUI {
     }
 
     drawCraftResult() {
-
         const result = this.getCraftResult();
-
         this.resultEl.innerHTML = "";
-
         if (!result) return;
 
         const img = document.createElement("img");
