@@ -2,8 +2,9 @@ import { TILE_SIZE, Keys } from "./main.js";
 
 export class Player {
 
-    constructor(inventory) {
+    constructor(inventory, world) {
         this.inventory = inventory;
+        this.world = world;
 
         // wereld positie (pixels)
         this.x = 0;
@@ -13,11 +14,12 @@ export class Player {
 
         // mining state
         this.mining = false;
-        this.targetTile = null;
+        this.placeRequest = false;
 
+        // muis
         this.mouse = { x: 0, y: 0 };
 
-        // ===== MOUSE =====
+        // ===== MOUSE EVENTS =====
         window.addEventListener("mousemove", e => {
             this.mouse.x = e.clientX;
             this.mouse.y = e.clientY;
@@ -26,7 +28,7 @@ export class Player {
         window.addEventListener("mousedown", e => {
             if (inventory.isOpen) return;
 
-            if (e.button === 0) this.mining = true;      // links
+            if (e.button === 0) this.mining = true;       // links
             if (e.button === 2) this.placeRequest = true; // rechts
         });
 
@@ -37,11 +39,9 @@ export class Player {
         window.addEventListener("contextmenu", e => e.preventDefault());
     }
 
-
     // =====================================================
     // UPDATE
     // =====================================================
-
     update(dt, world) {
 
         this.move(dt);
@@ -50,39 +50,29 @@ export class Player {
 
         // ===== MINING =====
         if (this.mining) {
-
             const drop = world.mine(tile.tx, tile.ty, dt);
-
             if (drop) {
                 this.inventory.addItem(drop, 1);
             }
-
         } else {
             world.stopMining(tile.tx, tile.ty);
         }
 
         // ===== PLACE BLOCK =====
         if (this.placeRequest) {
-
             const item = this.inventory.getSelectedItem();
-
             if (item && item !== "empty") {
-
                 world.setTile(tile.tx, tile.ty, item);
                 this.inventory.removeSelected(1);
             }
-
             this.placeRequest = false;
         }
     }
 
-
     // =====================================================
     // MOVEMENT
     // =====================================================
-
     move(dt) {
-
         let dx = 0;
         let dy = 0;
 
@@ -101,15 +91,11 @@ export class Player {
         this.y += dy * this.speed * dt;
     }
 
-
     // =====================================================
     // TILE TARGETING
     // =====================================================
-
-    getMouseTile(world) {
-
+    getMouseTile(world = null) {
         const canvas = document.getElementById("game");
-
         const camX = this.x - canvas.width / 2;
         const camY = this.y - canvas.height / 2;
 
@@ -122,11 +108,9 @@ export class Player {
         return { tx, ty };
     }
 
-
     // =====================================================
     // DRAW
     // =====================================================
-
     draw(ctx, camera) {
 
         // speler
@@ -142,12 +126,28 @@ export class Player {
         const tile = this.getMouseTile();
         ctx.strokeStyle = "white";
         ctx.lineWidth = 2;
-
         ctx.strokeRect(
             tile.tx * TILE_SIZE - camera.x,
             tile.ty * TILE_SIZE - camera.y,
             TILE_SIZE,
             TILE_SIZE
         );
+
+        // ===== MINING ANIMATIE =====
+        if (this.mining && this.world.mining) {
+
+            const key = `${tile.tx},${tile.ty}`;
+            const progress = this.world.mining.get(key) || 0;
+            const ratio = Math.min(progress / 5, 1); // MINE_TIME = 5 seconden
+
+            ctx.fillStyle = "rgba(0,0,0,0.6)";
+            const size = TILE_SIZE * ratio;
+            ctx.fillRect(
+                tile.tx * TILE_SIZE - camera.x + (TILE_SIZE - size)/2,
+                tile.ty * TILE_SIZE - camera.y + (TILE_SIZE - size)/2,
+                size,
+                size
+            );
+        }
     }
 }
