@@ -1,0 +1,165 @@
+```html
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8" />
+    <title>2D Colony Game</title>
+
+    <style>
+        /* ===== RESET ===== */
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #1a1a1a;
+            font-family: sans-serif;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        /* ===== UI OVERLAY ===== */
+        #ui {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* ===== GENERIC SLOT STYLE ===== */
+        .slot {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #555;
+            background: #2b2b2b;
+            box-sizing: border-box;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            image-rendering: pixelated;
+
+            pointer-events: auto;
+        }
+
+        .slot img {
+            width: 32px;
+            height: 32px;
+            pointer-events: none;
+        }
+
+        .slot.selected {
+            border-color: #ffffff;
+        }
+
+        /* ===== HOTBAR ===== */
+        #hotbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            display: grid;
+            grid-template-columns: repeat(9, 48px);
+            gap: 4px;
+        }
+
+        /* ===== INVENTORY WINDOW ===== */
+        #inventoryWindow {
+            position: absolute;
+            inset: 0;
+
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+            background: rgba(0,0,0,0.6);
+            pointer-events: auto;
+        }
+
+        #inventoryPanel {
+            background: #3a3a3a;
+            padding: 16px;
+            border: 3px solid #777;
+
+            display: flex;
+            gap: 24px;
+        }
+
+        /* ===== INVENTORY GRID ===== */
+        #inventoryGrid {
+            display: grid;
+            grid-template-columns: repeat(9, 48px);
+            gap: 4px;
+        }
+
+        /* ===== CRAFTING ===== */
+        #crafting {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #craftGrid {
+            display: grid;
+            grid-template-columns: repeat(3, 48px);
+            gap: 4px;
+        }
+
+        #craftResult {
+            margin-top: 8px;
+            align-self: center;
+        }
+
+        /* ===== SMALL TEXT ===== */
+        .label {
+            color: #ddd;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== GAME CANVAS ===== -->
+    <canvas id="game"></canvas>
+
+
+    <!-- ===== UI LAYER ===== -->
+    <div id="ui">
+
+        <!-- HOTBAR -->
+        <div id="hotbar"></div>
+
+
+        <!-- INVENTORY SCREEN -->
+        <div id="inventoryWindow">
+            <div id="inventoryPanel">
+
+                <div>
+                    <div class="label">Inventory</div>
+                    <div id="inventoryGrid"></div>
+                </div>
+
+                <div id="crafting">
+                    <div class="label">Crafting</div>
+                    <div id="craftGrid"></div>
+
+                    <div class="label">Result</div>
+                    <div id="craftResult" class="slot"></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- GAME CODE -->
+    <script type="module" src="./main.js"></script>
+
+</body>
+</html>
+```
